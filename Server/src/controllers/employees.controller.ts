@@ -11,41 +11,32 @@ class EmployeeController {
   public employeeService = new employeeService();
 
   public getEmployees = async (req: Request, res: Response, next: NextFunction) => {
-    const newinfo = [];
-    let counter = 0;
+    const promises = [];
 
-    Employees.forEach(async employee => {
-      console.log(`CURRENT EMPLOYEE : ${employee.firstName}  COUNTRY CODE IS :  ${employee.country} `);
-
-      const response = await axios
-        .get(`https://restcountries.eu/rest/v2/alpha/${employee.country}`)
-        .then(payload => {
-          // console.log(payload.data);
-          if (payload.data) {
-            counter += 1;
-            employee.country = payload.data.name;
-            employee.countryCurrency = payload.data.currencies;
-            employee.countryLanguages = payload.data.countryLanguages;
-            employee.countryTimeZones = payload.data.timezones;
-            if (payload.data.region == 'Asia' || payload.data.region == 'Europe') {
-              const newDob = employee.dateOfBirth.replace(/\//g, '');
-              employee.identifier = `${employee.firstName}${employee.lastName}${newDob}`;
-            }
-            newinfo.push(employee);
-            return newinfo;
+    Employees.forEach(employee => {
+      const promise = new Promise((resolve, reject) => {
+        axios.get(`https://restcountries.eu/rest/v2/alpha/${employee.country}`).then(payload => {
+          employee.country = payload.data.name;
+          employee.countryCurrency = payload.data.currencies;
+          employee.countryLanguages = payload.data.countryLanguages;
+          employee.countryTimeZones = payload.data.timezones;
+          if (payload.data.region == 'Asia' || payload.data.region == 'Europe') {
+            const newDob = employee.dateOfBirth.replace(/\//g, '');
+            employee.identifier = `${employee.firstName}${employee.lastName}${newDob}`;
           }
-        })
-        .catch(err => {
-          if (err) {
-            console.log('ERROR : ', err);
-          }
+          resolve({
+            employee: employee,
+          });
         });
-
-      if (counter == Employees.length) {
-        res.status(200).json({ data: newinfo, message: 'findAll' });
-      }
-
-      return employee;
+      }).catch(err => {
+        if (err) {
+          console.log('ERROR : ', err);
+        }
+      });
+      promises.push(promise);
+    });
+    Promise.all(promises).then(vals => {
+      res.status(200).json({ data: vals, message: 'findAll' });
     });
   };
 
@@ -60,18 +51,6 @@ class EmployeeController {
     }
   };
   employee: any;
-
-  // public updateUser = async (req: Request, res: Response, next: NextFunction) => {
-  //   try {
-  //     const userId: string = req.params.id;
-  //     const userData: CreateUserDto = req.body;
-  //     const updateUserData: User = await this.userService.updateUser(userId, userData);
-
-  //     res.status(200).json({ data: updateUserData, message: 'updated' });
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // };
 }
 
 export default EmployeeController;
