@@ -95,4 +95,43 @@ describe('Testing Employees', () => {
       return request(app.getServer()).get(`${employeeRoute.path}`).expect(200);
     });
   });
+
+  describe('[POST] /api/employees', () => {
+    it('response Create an Employee through the FrontEnd', async () => {
+      const userData: CreateEmployeeDto = {
+        firstName: 'Eddie',
+        lastName: 'Ruiz',
+        dateOfBirth: '05/20/1993',
+        workingHours: '40h',
+        holidayAllowance: '35',
+        countryOfWork: 'USA',
+        country: 'USA',
+        socialInsuranceNumber: '8923794793',
+        numberOfChildren: '0',
+        maritalStatus: 'Single',
+      };
+
+      const employeeRoute = new EmployeeRoute();
+      const employees = employeeRoute.employeeController.employeeService.employees;
+
+      employees.findOne = jest.fn().mockReturnValue(null);
+      employees.create = jest.fn().mockReturnValue({
+        _id: '60706478aad6c9ad19a31c84',
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        dateOfBirth: userData.dateOfBirth,
+        workingHours: userData.workingHours,
+        holidayAllowance: userData.holidayAllowance,
+        countryOfWork: userData.countryOfWork,
+        country: userData.country,
+        socialInsuranceNumber: userData.socialInsuranceNumber,
+        numberOfChildren: userData.numberOfChildren,
+        maritalStatus: userData.maritalStatus,
+      });
+
+      (mongoose as any).connect = jest.fn();
+      const app = new App([employeeRoute]);
+      return request(app.getServer()).post(`${employeeRoute.path}`).send(userData).expect(201);
+    });
+  });
 });

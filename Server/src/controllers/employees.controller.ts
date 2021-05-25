@@ -49,11 +49,11 @@ class EmployeeController {
     });
   };
 
-
   public createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      console.log('THE FUCKING BODY: ', req.body);
       const userData: CreateEmployeeDto = req.body;
-      const createUserData: Employee = await this.employee.createUser(userData);
+      const createUserData: Employee = await this.employeeService.createUser(userData);
 
       res.status(201).json({ data: createUserData, message: 'created' });
     } catch (error) {
