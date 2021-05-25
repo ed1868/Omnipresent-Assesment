@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-
+import api from '../../api'
 
 
 
@@ -12,13 +12,14 @@ export default function Home(props) {
     firstName: '',
     lastName: '',
     holidayAllowance: ' ',
-    dateOfBirth:'',
+    dateOfBirth: '',
     socialInsuranceNumber: ' ',
     workingHours: ' ',
     numberOfChildren: ' '
   })
 
   function handleInputChange(event) {
+    console.log('entrooooo')
     setState({
       ...state,
       [event.target.name]: event.target.value,
@@ -237,6 +238,43 @@ export default function Home(props) {
     e.preventDefault();
 
     console.log(state);
+
+
+    let newUser = state;
+
+    console.log('PAYLOAD BEING SENT TO BACKEND : ', newUser);
+    api.signup(newUser)
+      .then(result => {
+        console.log('SUCCESS')
+        console.log(result);
+        props.history.push('/');
+      })
+      .catch(err => {
+        setState({ message: err.toString() });
+      })
+
+  }
+
+  function handleClick(e) {
+    e.preventDefault()
+    let data = {
+      country: state.country,
+      countryOfWork: state.countryOfWork,
+      firstName: state.firstName,
+      lastName: state.lastName,
+      holidayAllowance: state.holidayAllowance,
+      dateOfBirth: state.dateOfBirth,
+      socialInsuranceNumber: state.socialInsuranceNumber,
+      workingHours: state.workingHours,
+      numberOfChildren: state.numberOfChildren
+    }
+    api
+      .signup(data)
+      .then(result => {
+        console.log('SUCCESS!')
+        props.history.push('/') // Redirect to the home page
+      })
+      .catch(err => setState({ message: err.toString() }))
   }
 
   if (state.country == "Spain") {
